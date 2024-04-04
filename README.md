@@ -82,4 +82,4 @@ So, ready to add some sparkle to this challenge? Let's make these diamonds shine
 ---
 
 ## How to run
-Please fill this section as part of the assignment.
+First, make sure you have downloaded Python version 3.10 to your device.
