@@ -28,10 +28,13 @@ numerical_features = ['carat', 'depth', 'table', 'price', 'x', 'y', 'z']
 
 random_number_for_consistency = random.randint(0, 4294967295)
 
-print_model_evaluation = True
-
 directory_model_evaluation = 'model_weights'
 dataset_directory = os.path.join('../datasets')
+
+# Set this variable to False if you don't want the print of the evaluation
+print_model_evaluation = True
+
+X_test_original, y_test_original = None, None
 
 
 def load_model() -> Optional[xgb.XGBRegressor]:
@@ -224,17 +227,21 @@ def train(xgb_regressor: Optional[xgb.XGBRegressor] = None,
     - Optional[xgb.XGBRegressor]:
         Trained XGBoost regressor model if successful, otherwise None.
     """
+    global X_test_original, y_test_original
+    logger.info(f'Start training XGBoost...')
+
+    if X_test_original is None or y_test_original is None:
+        df = pd.read_csv(os.path.join(dataset_directory, 'diamonds', 'diamonds.csv'))
+        X_train, X_test_original, y_train, y_test_original = preprocessing_data(df)
+        xgb_regressor = xgb.XGBRegressor(random_state=random_number_for_consistency)
+        start_time = time.time()
+        xgb_regressor.fit(X_train, y_train)
+        end_time = time.time()
     if new_data_to_train is not None and xgb_regressor is not None:
         X_train, X_test, y_train, y_test = preprocessing_data(new_data_to_train)
-    else:
-        df = pd.read_csv(os.path.join(dataset_directory, '/diamonds/diamonds.csv'))
-        X_train, X_test, y_train, y_test = preprocessing_data(df)
-        xgb_regressor = xgb.XGBRegressor(random_state=random_number_for_consistency)
-
-    logger.info(f'Start training XGBoost...')
-    start_time = time.time()
-    xgb_regressor.fit(X_train, y_train)
-    end_time = time.time()
+        start_time = time.time()
+        xgb_regressor.fit(X_train, y_train, xgb_model=xgb_regressor)
+        end_time = time.time()
 
     timestamp_trained_model = datetime.now().strftime("%Y%m%d_%H%M%S")
     logger.info(f'Model trained correctly in {end_time - start_time}. Saving the model...')
@@ -242,8 +249,8 @@ def train(xgb_regressor: Optional[xgb.XGBRegressor] = None,
     xgb_regressor.save_model(model_filename)
 
     logger.info(f'Making prediction...')
-    xgb_prediction = xgb_regressor.predict(X_test)
-    xgb_rmse, xgb_mae, xgb_r2 = evaluate_model(xgb_prediction, y_test)
+    xgb_prediction = xgb_regressor.predict(X_test_original)
+    xgb_rmse, xgb_mae, xgb_r2 = evaluate_model(xgb_prediction, y_test_original)
     save_model_evaluation(timestamp_trained_model, random_number_for_consistency, (xgb_rmse, xgb_mae, xgb_r2))
     if print_model_evaluation:
         logger.info(f'--- XGBoost Regression Performance --- RMSE: {xgb_rmse:} - MAE: {xgb_mae:} - R2: {xgb_r2:}')
