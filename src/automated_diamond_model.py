@@ -11,6 +11,8 @@ import seaborn as sns
 import xgboost as xgb
 import matplotlib.pyplot as plt
 
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 from typing import Optional, Tuple
 from datetime import datetime
 from scipy.stats import f_oneway
@@ -29,6 +31,7 @@ random_number_for_consistency = random.randint(0, 4294967295)
 print_model_evaluation = True
 
 directory_model_evaluation = 'model_weights'
+dataset_directory = os.path.join('../datasets')
 
 
 def load_model() -> Optional[xgb.XGBRegressor]:
@@ -67,7 +70,7 @@ def load_model() -> Optional[xgb.XGBRegressor]:
     return None
 
 
-def load_new_data() -> Optional[pd.DataFrame]:
+def load_new_data(file_name: str) -> Optional[pd.DataFrame]:
     """
     Load a new dataset from a CSV file.
 
@@ -75,25 +78,27 @@ def load_new_data() -> Optional[pd.DataFrame]:
     - Optional[pd.DataFrame]:
         DataFrame containing the loaded dataset if successful, otherwise None.
     """
-    file_name = input("Load the file with the new data into the dataset folder.\n"
-                      "Enter the csv file name (without extension): ")
-    # Load a new dataset of diamonds
-    if len(file_name) > 0:
-        try:
-            df = pd.read_csv(os.path.join(f'../datasets/{file_name}.csv'))
-            logger.info(f'Loaded new data to train from {file_name}')
+    choice = input(f'File {file_name} has been uploaded.\n'
+                   'Do you want to train the model with this file? (y/n): ')
+    if choice == 'y':
+        # Load a new dataset of diamonds
+        if len(file_name) > 0:
+            try:
+                df = pd.read_csv(os.path.join(f'../datasets/{file_name}'))
+                logger.info(f'Loaded new data to train from {file_name}')
 
-            if not set(categorical_features).issubset(df.columns) or not set(numerical_features).issubset(df.columns):
-                logger.info(f'The columns in the provided CSV file do not match the expected columns.\n'
-                            f'Upload a CSV file compatible with the following columns:\n'
-                            f'cut, color, clarity, carat, depth, table, price, x, y and z\n')
-            else:
-                return df
-        except FileNotFoundError:
-            logger.info(f'No file with this name {file_name} was found')
-    logger.info(f'No file has been loaded')
-    return None
-
+                if not set(categorical_features).issubset(df.columns) or not set(numerical_features).issubset(
+                        df.columns):
+                    logger.info(f'The columns in the provided CSV file do not match the expected columns.\n'
+                                f'Upload a CSV file compatible with the following columns:\n'
+                                f'cut, color, clarity, carat, depth, table, price, x, y and z\n')
+                else:
+                    return df
+            except FileNotFoundError:
+                logger.info(f'No file with this name {file_name} was found')
+    else:
+        logger.info(f'No file has been loaded')
+        return None
 
 
 def preprocessing_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
@@ -222,7 +227,7 @@ def train(xgb_regressor: Optional[xgb.XGBRegressor] = None,
     if new_data_to_train is not None and xgb_regressor is not None:
         X_train, X_test, y_train, y_test = preprocessing_data(new_data_to_train)
     else:
-        df = pd.read_csv(os.path.join('../datasets/diamonds/diamonds.csv'))
+        df = pd.read_csv(os.path.join(dataset_directory, '/diamonds/diamonds.csv'))
         X_train, X_test, y_train, y_test = preprocessing_data(df)
         xgb_regressor = xgb.XGBRegressor(random_state=random_number_for_consistency)
 
@@ -245,20 +250,56 @@ def train(xgb_regressor: Optional[xgb.XGBRegressor] = None,
     return xgb_regressor
 
 
+class FileModifiedHandler(FileSystemEventHandler):
+    def __init__(self, xgb_regressor):
+        super().__init__()
+        self.xgb_regressor = xgb_regressor
+
+    def on_modified(self, event):
+        if event.is_directory:
+            return
+        logging.info(f'File {event.src_path} modified. Starting training...')
+        file_name = os.path.basename(event.src_path)
+        new_data_to_train = load_new_data(file_name)
+        if new_data_to_train is not None:
+            if len(new_data_to_train) != 0:
+                train(self.xgb_regressor, new_data_to_train)
+
+
+def start_watchdog(directory, xgb_regressor):
+    event_handler = FileModifiedHandler(xgb_regressor)
+    observer = Observer()
+    observer.schedule(event_handler, directory, recursive=False)
+    observer.start()
+    logging.info(f'Watching directory {directory} for file modifications...')
+
+    try:
+        while True:
+            time.sleep(5)
+    except KeyboardInterrupt:
+        observer.stop()
+        observer.join()
+
+
 def main():
     logging.basicConfig(level=logger_level)
-    logger.info('Started')
+    logger.info('Process automated_diamond_model started')
 
     xgb_regressor = load_model()
     if xgb_regressor is None:
         xgb_regressor = train()
 
-    new_data_to_train = load_new_data()
-    if new_data_to_train is not None:
-        if len(new_data_to_train) != 0:
-            train(xgb_regressor, new_data_to_train)
+    while True:
+        choice = input('Do you want to keep process alive to watch the folder for new data? (y/n): ')
+        if choice == 'y':
+            start_watchdog(dataset_directory, xgb_regressor)
+        elif choice == 'n':
+            print('Exiting...')
+            break
+        else:
+            print('Invalid input. Please reply with "y" or "n"')
 
-    logger.info('Finished')
+    logger.info('Process automated_diamond_model finished')
 
 
 if __name__ == '__main__':
