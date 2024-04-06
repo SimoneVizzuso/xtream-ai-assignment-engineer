@@ -169,7 +169,7 @@ def preprocessing_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd
 
     # Define the order for encoding for each feature
     cut_order = ['Ideal', 'Premium', 'Very Good', 'Good', 'Fair']
-    color_order = [letter for letter in string.ascii_uppercase[3:]]
+    color_order = [letter for letter in string.ascii_uppercase[3:10]]
     clarity_order = ['IF', 'VVS1', 'VVS2', 'VS1', 'VS2', 'SI1', 'SI2', 'I1']
 
     # Create a mapping dictionary for each feature
@@ -207,7 +207,7 @@ def preprocessing_evaluation(df: pd.DataFrame) -> pd.DataFrame:
     """
     # Define the order for encoding for each feature
     cut_order = ['Ideal', 'Premium', 'Very Good', 'Good', 'Fair']
-    color_order = [letter for letter in string.ascii_uppercase[3:]]
+    color_order = [letter for letter in string.ascii_uppercase[3:10]]
     clarity_order = ['IF', 'VVS1', 'VVS2', 'VS1', 'VS2', 'SI1', 'SI2', 'I1']
 
     # Create a mapping dictionary for each feature
