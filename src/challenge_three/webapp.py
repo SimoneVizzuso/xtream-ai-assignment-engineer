@@ -52,19 +52,18 @@ model = train_model()
 if st.button("Retrain the model!"):
     model = train_model(retrain=True)
 
+st.markdown("<hr>", unsafe_allow_html=True)
+
 st.header('Input Features')
 
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     cut = st.selectbox('Cut', ['Ideal', 'Premium', 'Very Good', 'Good', 'Fair'])
-
 with col2:
     color = st.selectbox('Color', [letter for letter in string.ascii_uppercase[3:]])
-
 with col3:
     clarity = st.selectbox('Clarity', ['IF', 'VVS1', 'VVS2', 'VS1', 'VS2', 'SI1', 'SI2', 'I1'])
-
 with col4:
     carat = st.number_input('Carat', min_value=0.01, max_value=5.0, value=1.0, step=0.1)
 
@@ -72,16 +71,12 @@ col5, col6, col7, col8, col9 = st.columns(5)
 
 with col5:
     depth = st.number_input('Depth', min_value=0.01, max_value=80.0, value=0.01, step=0.01)
-
 with col6:
     table = st.number_input('Table', min_value=0.01, max_value=80.0, value=0.01, step=0.01)
-
 with col7:
     x = st.number_input('X', min_value=0.01, max_value=10.0, value=0.01, step=0.01)
-
 with col8:
     y = st.number_input('Y', min_value=0.01, max_value=10.0, value=0.01, step=0.01)
-
 with col9:
     z = st.number_input('Z', min_value=0.01, max_value=10.0, value=0.01, step=0.01)
 
@@ -114,6 +109,8 @@ if st.button('Predict'):
     st.session_state["predicted_prices"].append(round(prediction[0]))
     st.session_state["input_data_list"].append(input_data.iloc[0][:-3])
 
+st.markdown("<hr>", unsafe_allow_html=True)
+
 # Display the Price History header
 st.header('Price History')
 if st.button('Clean History'):
@@ -122,24 +119,22 @@ if st.button('Clean History'):
 
 plot_prices(st.session_state["input_data_list"])
 
+st.markdown("<hr>", unsafe_allow_html=True)
+
+# Display the Price History header
+st.header('Train with new data')
+st.write("Insert new data below if you want to train the model with those new data. The accepted format is CSV.")
+
 # File uploader for CSV
 uploaded_file = st.file_uploader("Upload CSV", type=['csv'])
-
-if 'upload_button' not in st.session_state:
-    st.session_state['upload_button'] = True
 
 if uploaded_file is not None:
     input_data = pd.read_csv(uploaded_file)
     col10, col11 = st.columns(2)
     with col10:
-        if st.session_state['upload_button']:
-            myBtn = st.button('Show loaded Data')
-            st.session_state['upload_button'] = False
-        else:
-            myBtn = st.button('Hide loaded Data')
-            st.session_state['upload_button'] = True
+        show_data = st.checkbox('Show loaded Data')
 
-    if st.session_state['upload_button']:
+    if show_data:
         st.write(input_data)
 
     with col11:
