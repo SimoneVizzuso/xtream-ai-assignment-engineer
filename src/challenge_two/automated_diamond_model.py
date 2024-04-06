@@ -5,19 +5,15 @@ import os
 import random
 import string
 import time
+from datetime import datetime
+from typing import Optional, Tuple
 
 import pandas as pd
-import seaborn as sns
 import xgboost as xgb
-import matplotlib.pyplot as plt
-
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-from typing import Optional, Tuple
-from datetime import datetime
-from scipy.stats import f_oneway
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import root_mean_squared_error, mean_absolute_error, r2_score
+from sklearn.model_selection import train_test_split
+from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
 
 logger = logging.getLogger(__name__)
 logger_level = logging.DEBUG
@@ -29,7 +25,7 @@ numerical_features = ['carat', 'depth', 'table', 'price', 'x', 'y', 'z']
 random_number_for_consistency = random.randint(0, 4294967295)
 
 directory_model_evaluation = 'model_weights'
-dataset_directory = os.path.join('../datasets')
+dataset_directory = os.path.join('..', '..', 'datasets')
 
 # Set this variable to False if you don't want the print of the evaluation
 print_model_evaluation = True
@@ -87,7 +83,7 @@ def load_new_data(file_name: str) -> Optional[pd.DataFrame]:
         # Load a new dataset of diamonds
         if len(file_name) > 0:
             try:
-                df = pd.read_csv(os.path.join(f'../datasets/{file_name}'))
+                df = pd.read_csv(os.path.join(dataset_directory, file_name))
                 logger.info(f'Loaded new data to train from {file_name}')
 
                 if not set(categorical_features).issubset(df.columns) or not set(numerical_features).issubset(
