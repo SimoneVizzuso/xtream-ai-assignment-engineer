@@ -1,5 +1,3 @@
-# In this file we'll have the automated model that will take the weight of the trained model, new data and result in a
-# new model trained on new data
 import logging
 import os
 import random
@@ -57,7 +55,7 @@ def load_model() -> Optional[xgb.XGBRegressor]:
 
         # Get the first file (the newest model)
         if files:
-            newest_model_file = os.path.join(directory_model_evaluation, files[0])  # Add directory path to the filename
+            newest_model_file = os.path.join(directory_model_evaluation, files[0])
             logger.debug(f"Newest model found: {newest_model_file}")
 
             # Load the XGBoost model
@@ -259,6 +257,17 @@ class FileModifiedHandler(FileSystemEventHandler):
         self.xgb_regressor = xgb_regressor
 
     def on_modified(self, event):
+        """
+        Handle file modification events.
+
+        This method is called when a file modification event occurs. If the event is related to a file
+        uploaded into the model directory, it triggers the retraining of the model with the new data.
+
+        Parameters:
+        - event : FileModifiedEvent
+            The event object representing the file modification event.
+        """
+
         if event.is_directory:
             return
         logging.info(f'File {event.src_path} modified. Starting training...')
@@ -270,6 +279,18 @@ class FileModifiedHandler(FileSystemEventHandler):
 
 
 def start_watchdog(directory, xgb_regressor):
+    """
+    Start a watchdog to monitor file modifications in the specified directory.
+
+    Parameters:
+    - directory : str
+        The directory to be monitored for file modifications.
+    - xgb_regressor : xgb.XGBRegressor
+        The XGBoost regressor model to be reloaded upon file modification.
+
+    Returns:
+    - None
+    """
     event_handler = FileModifiedHandler(xgb_regressor)
     observer = Observer()
     observer.schedule(event_handler, directory, recursive=False)
