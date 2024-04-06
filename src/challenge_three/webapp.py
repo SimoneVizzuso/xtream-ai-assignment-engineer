@@ -66,6 +66,7 @@ def plot_prices(input_data_list=None):
 def main():
     st.title('Diamond Price Predictor')
 
+    st.header('Model Training')
     model = train_model()
 
     if st.button("Retrain the model!"):
@@ -73,7 +74,7 @@ def main():
 
     st.markdown("<hr>", unsafe_allow_html=True)
 
-    st.header('Input Features')
+    st.header('Price Prediction')
 
     col1, col2, col3, col4 = st.columns(4)
 
