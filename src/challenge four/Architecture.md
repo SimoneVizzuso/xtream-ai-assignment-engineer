@@ -57,3 +57,18 @@ It is also important to manage the load to distribute requests to the API at mul
 You then define target groups that will receive traffic from the LB by specifying various configuration parameters. A health monitor will also be provided to see if a target is available to receive traffic. This will also allow constant monitoring of the status in which the targets are working
 
 Connecting it all to the service, finishing fixing the configuration and security parameters will be enough to test and these services will be available to distribute the calls so that the system can be easily scaled up and made always available even if some of the targets fail
+
+## Logging and monitoring with alarms
+
+To monitor the infrastructure and make sure that one is constantly updated on possible problems that will, most certainly, happen, it is necessary to set up a service called CloudWatch. It will be possible to set up metrics to monitor such as invocation counts, latency, and error rates and make sure that you are notified if there are any problems.
+
+In this case you can set up the so-called alarms that will be sent based on the parameters provided such as a threshold not to be exceeded or even just a period after which to send a message anyway.
+
+For this to work there is a need to set up that the endpoints send logs directly to CloudWatch for real-time analysis. From here all logging policies can be set, from the time for which to keep them to how to archive them.
+
+## Thinking about security
+
+It is also critical to take care of security: as mentioned earlier, it is important to carefully set up the Identity and Access Management (IAM) provided by AWS for different parts of the infrastructure. This can be done by creating different roles and giving them different permissions based on the intended policy.
+
+Again with the AWS tools, it is possible to set up an encription of the data in the buckets or internal and client connections. If all the infrastructure and data have been built within AWS it will certainly be easier to manage the security of the same since many services work in sync with the endpoints, user roles, network and data.
+
