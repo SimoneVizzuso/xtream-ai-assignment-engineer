@@ -1,6 +1,6 @@
 # Challenge 4
 
-I opted to use Amazon as my provider, specifically the SageMaker service.
+I opted to use Amazon as my provider, specifically the SageMaker service. Every time I'll refer to "the service" I'll be referring to SageMaker.
 
 ## Configure the data storage
 
@@ -28,9 +28,9 @@ After testing that the job works, that the model is trained, that evaluations ar
 
 ## Setup the model versioning and logging
 
-It is important to set up versioning of the models and run experiments so you can understand how they have been changed over time, if there is a problem with a latest model being able to easily go back to the previous one or keep track of improvements
+It is important to set up versioning of the models and run experiments so you can understand how they have been changed over time, if there is a problem with a latest model being able to easily go back to the previous one or keep track of improvements.
 
-It is feasible to use the Experiments SDK to run experiments on the models. By tracking with logs the metrics and results of the models it is possible to have a history to reproduce the results and help in a potential debugging case
+It is feasible to use the Experiments SDK to run experiments on the models. By tracking with logs the metrics and results of the models it is possible to have a history to reproduce the results and help in a potential debugging case.
 
 Versioning is done through the possibility of labeling, thanks to the Model Registry, the various runs of the trainings in order to have a record of them for the reasons proposed above.
 
@@ -43,3 +43,17 @@ After verifying that the model is trained and that the preprocessing jobs are co
 Set the type of instance on which to deploy the model based on the expected traffic volume, desired latency, and other factors. One can also set up Autoscaling so as to automate scaling so as to handle any spikes in traffic.
 
 After that it is possible to configure the endpoint from which to call the model so that it will be available an URL to call in order to do inference. All that is left to do at this point is to test, monitor the responses, and possibly, with versioning, keep the model up to date.
+
+## Manage the API Gateway
+With Amazon API Gateway it is possible to create REST APIs to access, just set up the API endpoints to interact with those in the model and it will be possible to implement GET, POST, etc.
+
+It will then be necessary to configure the API Gateway to result as a backend service in a SageMaker endpoint. it is then necessary to set up the request and response mapping and ensure that they accurately manage input validation, data transformation, and error handling.
+
+Again it is possible to deploy the API so that it can be accessed by the client. Next it is important to take care of the security part with the IAM provided by AWS or other authentication systems.
+
+## Handle the load balance
+It is also important to manage the load to distribute requests to the API at multiple instances. This is achieved by creating a Load Balancer through the EC2 service. It is possible to create both an Application Load Balancer (ALB) and a Network Load Balancer (NLB).
+
+You then define target groups that will receive traffic from the LB by specifying various configuration parameters. A health monitor will also be provided to see if a target is available to receive traffic. This will also allow constant monitoring of the status in which the targets are working
+
+Connecting it all to the service, finishing fixing the configuration and security parameters will be enough to test and these services will be available to distribute the calls so that the system can be easily scaled up and made always available even if some of the targets fail
