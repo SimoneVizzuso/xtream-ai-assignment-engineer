@@ -72,3 +72,11 @@ It is also critical to take care of security: as mentioned earlier, it is import
 
 Again with the AWS tools, it is possible to set up an encription of the data in the buckets or internal and client connections. If all the infrastructure and data have been built within AWS it will certainly be easier to manage the security of the same since many services work in sync with the endpoints, user roles, network and data.
 
+## Other possible consideration
+
+There are numerous issues to keep in mind when finalizing an architecture, for example, cost optimization, automatic resource scaling, backup management, and GRC (Governance Risk Compliance):
+- For cost optimization, cost allocation tags can be used to track them and observe how they could be worked on to reduce or contain them. However, this must be coupled with careful analysis and application of optimization strategies
+- On the automatic scaling of resources, extreme care must be taken because cloud services are notorious for, if not configured properly, scaling excessively and later presenting an exorbitantly expensive bill.
+Depending on utilization, one can set values (such as CPU utilization, wait times, and queued users) so that resources can be scaled up, but as mentioned before one must be careful that these resources do not only scale up for a period, and thus there is no need to scale up the entire architecture but only to amplify the service for a short period.
+- Backup, and therefore all disaster recovery play a key role in any data-populated environment. It is important to set up a regular backup system to avoid data loss. Equally important is to test backups from time to time to make sure they are still intact and functioning.
+- Last but not least, the whole topic related to data and security legislative regulations including GDPR, HIPAA, and PCI DSS. Necessary, penalty related implications, to adhere to regulations and implement security and control systems that are compliant with the requirements of the governments where the service is deployed or provided.
